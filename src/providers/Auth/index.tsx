@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { Credentials, NodeProps } from "../../globalTypes";
 import { postLogin } from "../../services/api";
+import { Credentials, NodeProps } from "../../globalTypes";
 import { AuthProviderData, Response } from "./types";
 
 const AuthContext = createContext<AuthProviderData>({} as AuthProviderData);
@@ -13,6 +13,8 @@ export const AuthProvider = ({ children }: NodeProps): JSX.Element => {
     (): string => localStorage.getItem("token") || ""
   );
 
+  const [failMessage, setFailMessage] = useState<string>("");
+
   const setLogin = (credentials: Credentials): void => {
     postLogin(credentials)
       .then((response: Response) => {
@@ -20,9 +22,13 @@ export const AuthProvider = ({ children }: NodeProps): JSX.Element => {
         setAuthToken(response.data.token);
         history.push("/dashboard");
       })
-      // TODO exibir toastify de falha na autenticação
       .catch((error: Response) => {
-        console.error(error.response.data.message);
+        const message: string =
+          error.response.data.message ===
+          "Incorrect email / password combination"
+            ? "Combinação de e-mail e senha incorreta."
+            : error.response.data.message;
+        setFailMessage(message);
       });
   };
 
@@ -33,7 +39,9 @@ export const AuthProvider = ({ children }: NodeProps): JSX.Element => {
   };
 
   return (
-    <AuthContext.Provider value={{ authToken, setLogin, setLogout }}>
+    <AuthContext.Provider
+      value={{ authToken, failMessage, setFailMessage, setLogin, setLogout }}
+    >
       {children}
     </AuthContext.Provider>
   );
