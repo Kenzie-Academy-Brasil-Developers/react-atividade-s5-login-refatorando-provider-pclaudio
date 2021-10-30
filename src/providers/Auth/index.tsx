@@ -1,8 +1,9 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { postLogin } from "../../services/api";
 import { Credentials, NodeProps } from "../../globalTypes";
-import { AuthProviderData, Response } from "./types";
+import { CustomAxiosResponse } from "../../services/types";
+import { AuthProviderData } from "./types";
 
 const AuthContext = createContext<AuthProviderData>({} as AuthProviderData);
 
@@ -13,23 +14,35 @@ export const AuthProvider = ({ children }: NodeProps): JSX.Element => {
     (): string => localStorage.getItem("token") || ""
   );
 
+  const [response, setResponse] = useState<CustomAxiosResponse>(
+    {} as CustomAxiosResponse
+  );
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [failMessage, setFailMessage] = useState<string>("");
 
-  const setLogin = (credentials: Credentials): void => {
-    postLogin(credentials)
-      .then((response: Response) => {
-        localStorage.setItem("token", response.data.token);
-        setAuthToken(response.data.token);
-        history.push("/dashboard");
-      })
-      .catch((error: Response) => {
-        const message: string =
-          error.response.data.message ===
-          "Incorrect email / password combination"
-            ? "Combinação de e-mail e senha incorreta."
-            : error.response.data.message;
-        setFailMessage(message);
-      });
+  useEffect(() => {
+    if (response.status === 200) {
+      localStorage.setItem("token", response.data.token);
+      setAuthToken(response.data.token);
+      history.push("/dashboard");
+    } else if (response.status >= 400) {
+      const message: string =
+        response.data.message === "Incorrect email / password combination"
+          ? "Combinação de e-mail e senha incorreta."
+          : response.data.message;
+      setFailMessage(message);
+    }
+
+    setIsLoading(false);
+
+    // eslint-disable-next-line
+  }, [response]);
+
+  const setLogin = async (credentials: Credentials): Promise<void> => {
+    setIsLoading(true);
+    setResponse(await postLogin(credentials));
   };
 
   const setLogout = (): void => {
@@ -40,7 +53,14 @@ export const AuthProvider = ({ children }: NodeProps): JSX.Element => {
 
   return (
     <AuthContext.Provider
-      value={{ authToken, failMessage, setFailMessage, setLogin, setLogout }}
+      value={{
+        authToken,
+        isLoading,
+        failMessage,
+        setFailMessage,
+        setLogin,
+        setLogout,
+      }}
     >
       {children}
     </AuthContext.Provider>

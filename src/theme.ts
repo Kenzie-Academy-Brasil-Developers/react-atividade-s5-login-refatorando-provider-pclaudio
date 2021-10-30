@@ -7,6 +7,9 @@ const theme: Theme = createTheme({
       default: "#eaeef3",
     },
   },
+  colors: {
+    ceruleanBlue: "#457b9d",
+  },
 });
 
 export default theme;

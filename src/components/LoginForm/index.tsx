@@ -5,18 +5,19 @@ import { useAuth } from "../../providers/Auth";
 import { Credentials } from "../../globalTypes";
 import { Avatar, BoxContainer, BoxForm, Button } from "./styles";
 import { LockOutlined } from "@mui/icons-material";
+import Copyright from "../Copyright";
 import {
-  Checkbox,
+  CircularProgress,
   FormControlLabel,
   Grid,
   Link,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
-import Copyright from "../Copyright";
 
 const LoginForm = (): JSX.Element => {
-  const { setLogin } = useAuth();
+  const { isLoading, setLogin } = useAuth();
 
   const {
     register,
@@ -65,14 +66,22 @@ const LoginForm = (): JSX.Element => {
           {...register("password")}
         />
 
-        {/* // TODO mudar para um slider */}
         <FormControlLabel
-          control={<Checkbox value="remember" color="primary" />}
+          control={<Switch color="error" />}
           label="Lembre-me"
         />
 
-        <Button type="submit" fullWidth variant="contained">
-          Entrar
+        <Button
+          fullWidth
+          disabled={isLoading}
+          type="submit"
+          variant="contained"
+        >
+          {isLoading ? (
+            <CircularProgress color="primary" size={24} />
+          ) : (
+            "Entrar"
+          )}
         </Button>
 
         <Grid container>

@@ -1,5 +1,6 @@
-import kenzieLogo from "../../assets/images/kenzie.svg";
 import { useAuth } from "../../providers/Auth";
+import kenzieLogo from "../../assets/images/kenzie.svg";
+import { Box, Button, Container } from "./styles";
 
 const Dashboard = (): JSX.Element => {
   const { setLogout } = useAuth();
@@ -9,11 +10,20 @@ const Dashboard = (): JSX.Element => {
   };
 
   return (
-    <>
-      <h1>Dashboard</h1>
-      <img src={kenzieLogo} alt="Kenzie Academy Brasil" />
-      <button onClick={handleLogout}>Sair</button>
-    </>
+    <Container disableGutters maxWidth={false}>
+      <Box>
+        <img src={kenzieLogo} alt="Kenzie Academy Brasil" />
+        <Button
+          fullWidth
+          variant="contained"
+          color="error"
+          size="large"
+          onClick={handleLogout}
+        >
+          Sair
+        </Button>
+      </Box>
+    </Container>
   );
 };
 
